@@ -18,7 +18,7 @@ class Test:
     def __init__(self, user):
         self.user = user
         self.score = 0
-        self.num_questions = 100
+        self.num_questions = 10
         self.num_solved_questions = 0
         self.questions_seen = []
         self.last_question, self.second_last_question = None, None
@@ -82,6 +82,8 @@ def continue_test(request):
     result_dict = dict(started='new Date("%s")' % test.started.ctime(), num_solved_questions=test.num_solved_questions, num_questions=test.num_questions)
     if test.finished:
         result_dict['finished'] = True
+        result_dict['score'] = test.score
+        del Test.current_tests[request.user.username]
     else:
         result_dict['current_question'] = test.current_question.to_dict()
     return HttpResponse(json.dumps(result_dict))

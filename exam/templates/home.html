@@ -101,8 +101,15 @@
               direction: 'left',
               complete: function(){
                 (function(){
-                  formatted_question = sprintf("<div class='hero-unit'><h4>%s</h4><label class='radio'><input type='radio' name=options value=1>%s</label><label class='radio'><input type='radio' name=options value=2>%s</label><label class='radio'><input type='radio' name=options value=3>%s</label><label class='radio'><input type='radio' name=options value=4>%s</label><button class='btn btn-primary test_continue_btn pull-right' disabled>Next</button></div>", response.current_question.text, response.current_question.option_1, response.current_question.option_2, response.current_question.option_3, response.current_question.option_4);
-                  $wrapper.html(formatted_question);
+                  if(response.finished)
+                  {
+                    $wrapper.html(sprintf("<div class='hero-unit'><h2>Test Finished</h2><p>Congratuations! You finished your test. You scored %d marks in the test.", response.score))
+                  }
+                  else
+                  {
+                    formatted_question = sprintf("<div class='hero-unit'><h4>%s</h4><label class='radio'><input type='radio' name=options value=1>%s</label><label class='radio'><input type='radio' name=options value=2>%s</label><label class='radio'><input type='radio' name=options value=3>%s</label><label class='radio'><input type='radio' name=options value=4>%s</label><button class='btn btn-primary test_continue_btn pull-right' disabled>Next</button></div>", response.current_question.text, response.current_question.option_1, response.current_question.option_2, response.current_question.option_3, response.current_question.option_4);
+                    $wrapper.html(formatted_question);
+                  }
                   $container.show({
                     effect: 'slide',
                     direction: 'right'
