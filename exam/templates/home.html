@@ -29,6 +29,9 @@
       </div>
     </div>
 
+    <div class="container" id="timer_div" style="font-size:54px;line-height:77px;height:77px;">
+
+    </div>
     <div class="container" id="container">
 
       <!-- Main hero unit for a primary marketing message or call to action -->
@@ -60,6 +63,7 @@
     <script src="{% static 'bootstrap/js/bootstrap.min.js' %}"></script>
     <script src="{% static 'jquery-loadmask-0.4/jquery.loadmask.min.js' %}"></script>
     <script src="{% static 'js/sprintf.min.js' %}"></script>
+    <script src="{% static 'js/jquery.countdown.js' %}"></script>
     <script type="text/javascript">
       $.ajaxSetup({
         beforeSend: function(xhr, settings) {
@@ -86,21 +90,32 @@
         }
       });
       $(function(){
+        var test_ended = false;
         $container = $("#container");
         $wrapper = $("#wrapper");
-        $container.on('click', '.test_continue_btn', function(event){
+        var move_forward = function(event){
           $container.mask('Loading...', 500);
-          data = {}
+          var data = {}
           if($wrapper.find('input[name=options]:checked').val())
             data.option_checked=$wrapper.find('input[name=options]:checked').val()
           $.post('/exam/continue_test/', data).done(function(response){
-            response = JSON.parse(response)
+            var response = JSON.parse(response)
+            var timer_end = function(){
+              if (test_ended)
+                return;
+              test_ended = true;
+              $wrapper.find('.test_continue_btn').button('enable');
+              if($wrapper.find('input[name=options]'))
+                setTimeout(move_forward, 1000);
+            }
+            var finish_time = eval(response.finish_time)
             $container.unmask();
             $container.hide({
               effect: 'slide',
               direction: 'left',
               complete: function(){
                 (function(){
+                  $("#timer_div").countdown_clear();
                   if(response.finished)
                   {
                     $wrapper.html(sprintf("<div class='hero-unit'><h2>Test Finished</h2><p>Congratuations! You finished your test. You scored %d marks in the test.", response.score))
@@ -109,6 +124,29 @@
                   {
                     formatted_question = sprintf("<div class='hero-unit'><h4>%s</h4><label class='radio'><input type='radio' name=options value=1>%s</label><label class='radio'><input type='radio' name=options value=2>%s</label><label class='radio'><input type='radio' name=options value=3>%s</label><label class='radio'><input type='radio' name=options value=4>%s</label><button class='btn btn-primary test_continue_btn pull-right' disabled>Next</button></div>", response.current_question.text, response.current_question.option_1, response.current_question.option_2, response.current_question.option_3, response.current_question.option_4);
                     $wrapper.html(formatted_question);
+                    var msec = finish_time - new Date();
+                    if(msec<=0)
+                    {
+                      timer_end();
+                    }
+                    else
+                    {
+                      var hh = Math.floor(msec / 1000 / 60 / 60);
+                      msec -= hh * 1000 * 60 * 60;
+                      var mm = Math.floor(msec / 1000 / 60);
+                      msec -= mm * 1000 * 60;
+                      var ss = Math.floor(msec / 1000);
+                      $("#timer_div").countdown({
+                        stepTime: 60,
+                        format: 'hh:mm:ss',
+                        startTime: sprintf("%02d:%02d:%02d", hh, mm, ss),
+                        digitImages: 6,
+                        digitWidth: 53,
+                        digitHeight: 77,
+                        timerEnd: timer_end,
+                        image: "/static/img/digits.png"
+                      });
+                    }
                   }
                   $container.show({
                     effect: 'slide',
@@ -118,7 +156,8 @@
               }
             })
           });
-        });
+        };
+        $container.on('click', '.test_continue_btn', move_forward);
         $container.on('click', 'input[name=options]', function(event){
           $wrapper.find('.test_continue_btn').button('enable')
         });

@@ -18,12 +18,15 @@ class Test:
     def __init__(self, user):
         self.user = user
         self.score = 0
+        # Ten questions in Ten minutes
         self.num_questions = 10
+        self.duration = datetime.timedelta(seconds=10)
         self.num_solved_questions = 0
         self.questions_seen = []
         self.last_question, self.second_last_question = None, None
         self.current_difficulty = 4
-        self.started = datetime.datetime.now()
+        self.start_time = datetime.datetime.now()
+        self.finish_time = self.start_time + self.duration
         self.current_question = self.get_new_question(self.current_difficulty)
 
     def get_new_question(self, difficulty):
@@ -51,7 +54,7 @@ class Test:
 
     @property
     def finished(self):
-        return self.num_solved_questions == self.num_questions
+        return datetime.datetime.now() > self.finish_time or self.num_solved_questions == self.num_questions
 
     @classmethod
     def user_check_current_test(cls, user):
@@ -77,9 +80,9 @@ def continue_test(request):
     if request.method == 'GET':
         raise Http404
     test = Test.get_test(request.user)
-    if 'option_checked' in request.POST:
+    if 'option_checked' in request.POST and not test.finished:
         test.solve_current(int(request.POST.get('option_checked')))
-    result_dict = dict(started='new Date("%s")' % test.started.ctime(), num_solved_questions=test.num_solved_questions, num_questions=test.num_questions)
+    result_dict = dict(finish_time='new Date("%s")' % test.finish_time.ctime(), num_solved_questions=test.num_solved_questions, num_questions=test.num_questions)
     if test.finished:
         result_dict['finished'] = True
         result_dict['score'] = test.score
