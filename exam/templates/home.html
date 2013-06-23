@@ -29,8 +29,11 @@
       </div>
     </div>
 
-    <div class="container" id="timer_div" style="font-size:54px;line-height:77px;height:77px;">
-
+    <div class="container">
+      <div id="timer_div" style="font-size:54px;line-height:77px;height:77px;" class="span6">
+      </div>
+      <h1 id="question_stats" class="pull-right">
+      </h1>
     </div>
     <div class="container" id="container">
 
@@ -100,6 +103,7 @@
             data.option_checked=$wrapper.find('input[name=options]:checked').val()
           $.post('/exam/continue_test/', data).done(function(response){
             var response = JSON.parse(response)
+            $("#question_stats").html(sprintf("Solved: %d/%d", response.num_solved_questions, response.num_questions));
             var timer_end = function(){
               if (test_ended)
                 return;
