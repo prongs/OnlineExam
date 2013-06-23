@@ -20,7 +20,7 @@ class Test:
         self.score = 0
         # Ten questions in Ten minutes
         self.num_questions = 10
-        self.duration = datetime.timedelta(seconds=10)
+        self.duration = datetime.timedelta(minutes=10)
         self.num_solved_questions = 0
         self.questions_seen = []
         self.last_question, self.second_last_question = None, None
