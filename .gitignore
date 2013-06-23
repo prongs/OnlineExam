@@ -36,3 +36,4 @@ nosetests.xml
 
 #sqlite
 *.db
+initial_data.json

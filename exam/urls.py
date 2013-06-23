@@ -4,4 +4,5 @@ from django.conf.urls import patterns, include, url
 
 urlpatterns = patterns('exam.views',
     url(r'^home/$', 'home'),
+    url(r'^continue_test/$', 'continue_test'),
 )

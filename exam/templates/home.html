@@ -1,0 +1,121 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>TheOnlineTest</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="{% static 'bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'jquery-loadmask-0.4/jquery.loadmask.css' %}" rel="stylesheet">
+    <link href="{% static 'jquery-ui-1.10.3/themes/base/minified/jquery-ui.min.css' %}" rel="stylesheet">
+    <style type="text/css">
+      body {
+        padding-top: 60px;
+        padding-bottom: 40px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="navbar navbar-inverse navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container">
+          <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="brand" href="/exam/home/">TheOnlineTest</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="container" id="container">
+
+      <!-- Main hero unit for a primary marketing message or call to action -->
+      <div id = "wrapper">
+        <div class="hero-unit">
+          <h1>Hi, {{user.first_name}} {{user.last_name}}</h1>
+          {%if test_running %}
+          <p>Seems like you were taking a test and didn't finish it. Click below to continue</p>
+          <p><a href="#" class="btn btn-primary btn-large test_continue_btn">Continue my Test &raquo;</a></p>
+          {% else %}
+          <p>Click below to start taking TheOnlineTest</p>
+          <p><a href="#" class="btn btn-primary btn-large test_continue_btn">Start Test &raquo;</a></p>
+          {%endif %}
+        </div>
+      </div>
+      <hr>
+    </div> <!-- /container -->
+    <div class="container">
+    <footer>
+      <p>&copy; TheOnlineTest 2013</p>
+    </footer>
+    </div>
+
+    <!-- Le javascript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="{% static 'jquery-2.0.1.min.js' %}"></script>
+    <script src="{% static 'jquery-ui-1.10.3/ui/minified/jquery-ui.min.js' %}"></script>
+    <script src="{% static 'bootstrap/js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'jquery-loadmask-0.4/jquery.loadmask.min.js' %}"></script>
+    <script src="{% static 'js/sprintf.min.js' %}"></script>
+    <script type="text/javascript">
+      $.ajaxSetup({
+        beforeSend: function(xhr, settings) {
+          function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie != '') {
+              var cookies = document.cookie.split(';');
+              for (var i = 0; i < cookies.length; i++) {
+                var cookie = jQuery.trim(cookies[i]);
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                  cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                  break;
+                }
+              }
+            }
+            return cookieValue;
+          }
+          if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url)))
+          {
+            // Only send the token to relative URLs i.e. locally.
+            xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+          }
+        }
+      });
+      $(function(){
+        $container = $("#container");
+        $wrapper = $("#wrapper");
+        $container.on('click', '.test_continue_btn', function(event){
+          $container.mask('Loading...', 500);
+          data = {}
+          if($wrapper.find('input[name=options]:checked').val())
+            data.option_checked=$wrapper.find('input[name=options]:checked').val()
+          $.post('/exam/continue_test/', data).done(function(response){
+            response = JSON.parse(response)
+            $container.unmask();
+            $container.hide({
+              effect: 'slide',
+              direction: 'left',
+              complete: function(){
+                (function(){
+                  formatted_question = sprintf("<div class='hero-unit'><h4>%s</h4><label class='radio'><input type='radio' name=options value=1>%s</label><label class='radio'><input type='radio' name=options value=2>%s</label><label class='radio'><input type='radio' name=options value=3>%s</label><label class='radio'><input type='radio' name=options value=4>%s</label><button class='btn btn-primary test_continue_btn pull-right' disabled>Next</button></div>", response.current_question.text, response.current_question.option_1, response.current_question.option_2, response.current_question.option_3, response.current_question.option_4);
+                  $wrapper.html(formatted_question);
+                  $container.show({
+                    effect: 'slide',
+                    direction: 'right'
+                  });
+                })();
+              }
+            })
+          });
+        });
+        $container.on('click', 'input[name=options]', function(event){
+          $wrapper.find('.test_continue_btn').button('enable')
+        });
+      });
+    </script>
+  </body>
+</html>
